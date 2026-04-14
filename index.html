@@ -132,89 +132,92 @@
             }
         ];
 
-        function getThumbnailUrl(url) {
+        function getEmbedUrl(url) {
             if (!url) return null;
             url = url.trim();
             const driveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
             const driveMatch = url.match(driveRegex);
-            if (driveMatch && driveMatch[1]) {
-                return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w800`;
-            }
+            if (driveMatch && driveMatch[1]) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+            if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com')) return url;
             const ytWatchRegex = /[?&]v=([^&#]*)/;
+            const match1 = url.match(ytWatchRegex);
+            if (match1 && match1[1]) return `https://www.youtube.com/embed/${match1[1]}`;
             const ytShortRegex = /youtu\.be\/([^?#]*)/;
-            let ytId = null;
-            if (url.match(ytWatchRegex)) ytId = url.match(ytWatchRegex)[1];
-            else if (url.match(ytShortRegex)) ytId = url.match(ytShortRegex)[1];
-            if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-            return null;
+            const match2 = url.match(ytShortRegex);
+            if (match2 && match2[1]) return `https://www.youtube.com/embed/${match2[1]}`;
+            return url;
         }
 
         function renderTendedero() {
             const grid = document.getElementById('tendedero-grid');
             grid.innerHTML = '';
+            
             misNueveVideos.forEach((video, index) => {
                 const rotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2'];
                 const randomRotate = rotations[index % rotations.length];
+                
                 const cardContainer = document.createElement('div');
                 cardContainer.className = 'relative flex justify-center pt-8 h-full';
+                
                 const cardRope = document.createElement('div');
                 cardRope.className = 'absolute top-4 left-[-10%] w-[120%] h-[2px] bg-stone-500 z-0 opacity-60';
+                
                 const card = document.createElement('article');
-                card.className = `paper-card w-full max-w-sm p-4 pb-5 border border-gray-200 transform ${randomRotate} flex flex-col`;
+                card.className = `paper-card w-full max-w-sm p-4 pb-6 border border-gray-200 transform ${randomRotate} flex flex-col`;
+                
                 const peg = document.createElement('div');
                 peg.className = 'clothes-peg';
+                
                 const title = document.createElement('h2');
                 title.className = 'font-serif text-lg font-bold text-purple-900 mb-2 mt-2 leading-tight';
                 title.innerText = video.titulo;
+                
                 const desc = document.createElement('p');
                 desc.className = 'text-sm text-gray-700 mb-4 flex-grow';
                 desc.innerText = video.descripcion;
+                
+                // Contenedor de video y enlace de respaldo
                 const mediaSection = document.createElement('div');
                 mediaSection.className = 'mt-auto w-full';
 
-                if (video.url && video.url.trim() !== "") {
-                    const thumbContainer = document.createElement('a');
-                    thumbContainer.href = video.url;
-                    thumbContainer.target = "_blank";
-                    thumbContainer.className = 'relative w-full aspect-video bg-gray-200 flex items-center justify-center rounded-sm overflow-hidden shadow-inner group cursor-pointer block';
-                    const thumbUrl = getThumbnailUrl(video.url);
-                    if (thumbUrl) {
-                        thumbContainer.innerHTML = `
-                            <img src="${thumbUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Miniatura de ${video.titulo}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="absolute inset-0 bg-gray-200 flex-col items-center justify-center hidden">
-                                <i class="fas fa-video text-gray-400 text-3xl mb-2"></i>
-                            </div>
-                            <div class="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                    <i class="fas fa-play text-purple-800 ml-1 text-xl"></i>
-                                </div>
-                            </div>`;
-                    } else {
-                        thumbContainer.innerHTML = `
-                            <div class="absolute inset-0 bg-gray-200 flex flex-col items-center justify-center">
-                                <i class="fas fa-video text-gray-400 text-3xl mb-2"></i>
-                                <div class="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-0 transition-all flex items-center justify-center">
-                                    <div class="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                        <i class="fas fa-play text-purple-800 ml-1 text-xl"></i>
-                                    </div>
-                                </div>
-                            </div>`;
-                    }
-                    const actionBtn = document.createElement('a');
-                    actionBtn.href = video.url;
-                    actionBtn.target = '_blank';
-                    actionBtn.className = 'mt-3 w-full block text-center bg-purple-800 text-white py-2 rounded-md font-bold text-sm hover:bg-purple-900 transition-colors shadow-sm flex items-center justify-center gap-2';
-                    actionBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Abrir Video';
-                    mediaSection.appendChild(thumbContainer);
-                    mediaSection.appendChild(actionBtn);
+                const videoBox = document.createElement('div');
+                videoBox.className = 'relative w-full aspect-video bg-black flex items-center justify-center rounded-sm overflow-hidden shadow-inner';
+                
+                const embedUrl = getEmbedUrl(video.url);
+                
+                if (embedUrl) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = embedUrl;
+                    iframe.className = 'w-full h-full';
+                    iframe.setAttribute('frameborder', '0');
+                    iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+                    iframe.setAttribute('allowfullscreen', 'true');
+                    videoBox.appendChild(iframe);
+
+                    mediaSection.appendChild(videoBox);
+
+                    // Pequeño enlace de respaldo por si el navegador bloquea el iframe de Drive
+                    const fallbackLink = document.createElement('a');
+                    fallbackLink.href = video.url;
+                    fallbackLink.target = '_blank';
+                    fallbackLink.className = 'block mt-2 text-[11px] text-gray-500 hover:text-purple-700 text-center hover:underline transition-colors';
+                    fallbackLink.innerHTML = '¿No carga el video? Ábrelo aquí';
+                    mediaSection.appendChild(fallbackLink);
+
                 } else {
-                    const emptyBox = document.createElement('div');
-                    emptyBox.className = 'relative w-full aspect-video bg-gray-200 flex flex-col items-center justify-center rounded-sm border border-gray-300';
-                    emptyBox.innerHTML = `<i class="fas fa-video-slash text-gray-400 text-3xl mb-2"></i><span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Video Pendiente</span>`;
-                    mediaSection.appendChild(emptyBox);
+                    videoBox.className = 'relative w-full aspect-video bg-gray-200 flex flex-col items-center justify-center rounded-sm border border-gray-300';
+                    videoBox.innerHTML = `<i class="fas fa-video-slash text-gray-400 text-3xl mb-2"></i><span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Video Pendiente</span>`;
+                    mediaSection.appendChild(videoBox);
                 }
-                card.appendChild(peg); card.appendChild(title); card.appendChild(desc); card.appendChild(mediaSection);
-                cardContainer.appendChild(cardRope); cardContainer.appendChild(card);
+                
+                card.appendChild(peg); 
+                card.appendChild(title); 
+                card.appendChild(desc); 
+                card.appendChild(mediaSection);
+                
+                cardContainer.appendChild(cardRope); 
+                cardContainer.appendChild(card);
+                
                 grid.appendChild(cardContainer);
             });
         }
