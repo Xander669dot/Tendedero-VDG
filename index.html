@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendedero Virtual - Memoria y Voces</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f4;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e7e5e4' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        h1, h2, h3, .font-serif { font-family: 'Lora', serif; }
+
+        .paper-card {
+            background: #ffffff;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .paper-card:hover {
+            transform: scale(1.02) rotate(0deg) !important;
+            box-shadow: 4px 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .clothes-peg {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 35px;
+            background-color: #d97706;
+            border-radius: 2px;
+            box-shadow: 1px 2px 3px rgba(0,0,0,0.3);
+            z-index: 20;
+        }
+        .clothes-peg::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: -2px;
+            width: 18px;
+            height: 4px;
+            background-color: #a16207;
+            border-radius: 1px;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <header class="bg-purple-900 text-white shadow-md border-b-4 border-purple-700">
+        <div class="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-wide">Tendedero de la Memoria</h1>
+            <p class="text-lg md:text-xl text-purple-100 max-w-2xl mx-auto">
+                Un espacio para escuchar, recordar y visibilizar. Nueve testimonios y casos de violencia de género y feminicidios que no deben ser olvidados.
+            </p>
+        </div>
+    </header>
+
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 max-w-4xl mx-auto mt-6 mb-2 rounded-r shadow-sm">
+        <div class="flex items-start">
+            <div class="flex-shrink-0"><i class="fas fa-exclamation-circle text-red-500 mt-1"></i></div>
+            <div class="ml-3">
+                <h3 class="text-sm font-bold text-red-800 uppercase tracking-wider">Advertencia de Contenido</h3>
+                <p class="text-sm text-red-700 mt-1">Los videos y casos presentados contienen narraciones de violencia de género y feminicidios que pueden resultar sensibles. Se recomienda discreción.</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 w-full overflow-hidden">
+        <div id="tendedero-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-20 gap-x-8 relative"></div>
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 py-8 text-center px-4">
+        <p class="text-sm">Proyecto de Concientización sobre Violencia de Género. <br> Exigimos justicia y memoria.</p>
+    </footer>
+
+    <script>
+        const misNueveVideos = [
+            {
+                titulo: "Alejandra Ico Chub",
+                descripcion: "Feminicidio cometido por su pareja en un ámbito íntimo con extrema violencia física.",
+                url: "" 
+            },
+            {
+                titulo: "Andrés Filomeno Mendoza Celis",
+                descripcion: 'Feminicida serial organizado ("El Caníbal de Atizapán") que operaba de manera metódica en Atizapán de Zaragoza.',
+                url: "" 
+            },
+            {
+                titulo: "Debanhi Escobar",
+                descripcion: "Caso de desaparición y feminicidio en Nuevo León que destacó por las fallas institucionales y la vulnerabilidad en espacios públicos.",
+                url: "" 
+            },
+            {
+                titulo: "Ingrid Escamilla",
+                descripcion: 'Víctima de feminicidio cuya revictimización mediática dio origen a la "Ley Ingrid".',
+                url: "" 
+            },
+            {
+                titulo: "Irma Hernández Cruz",
+                descripcion: "Maestra jubilada asesinada en un contexto de extorsión por el crimen organizado en Veracruz.",
+                url: "" 
+            },
+            {
+                titulo: "Valeria Márquez",
+                descripcion: "Influencer asesinada durante una transmisión en vivo en su salón de belleza en Zapopan.",
+                url: "https://drive.google.com/file/d/1hTOzmnNjMxtFAE64g0Cb8IFfpO3cAe0Z/view?usp=drivesdk" 
+            },
+            {
+                titulo: "Marisela Escobedo Ortiz",
+                descripcion: "Activista y madre buscadora asesinada frente al Palacio de Gobierno de Chihuahua mientras exigía justicia por su hija.",
+                url: "" 
+            },
+            {
+                titulo: "Valentina Gilabert y Marianne N.",
+                descripcion: "Conflicto interpersonal entre adolescentes que escaló a agresiones físicas y un proceso bajo justicia penal para menores.",
+                url: "" 
+            },
+            {
+                titulo: "Camila Gómez Ortega",
+                descripcion: "Niña de 8 años víctima de feminicidio y privación de la libertad por personas de su entorno cercano en Taxco.",
+                url: "" 
+            }
+        ];
+
+        function getEmbedUrl(url) {
+            if (!url) return null;
+            url = url.trim();
+            const driveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const driveMatch = url.match(driveRegex);
+            if (driveMatch && driveMatch[1]) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+            if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com')) return url;
+            const ytWatchRegex = /[?&]v=([^&#]*)/;
+            const match1 = url.match(ytWatchRegex);
+            if (match1 && match1[1]) return `https://www.youtube.com/embed/${match1[1]}`;
+            const ytShortRegex = /youtu\.be\/([^?#]*)/;
+            const match2 = url.match(ytShortRegex);
+            if (match2 && match2[1]) return `https://www.youtube.com/embed/${match2[1]}`;
+            return url;
+        }
+
+        function renderTendedero() {
+            const grid = document.getElementById('tendedero-grid');
+            grid.innerHTML = '';
+            
+            misNueveVideos.forEach((video, index) => {
+                const rotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2'];
+                const randomRotate = rotations[index % rotations.length];
+                
+                const cardContainer = document.createElement('div');
+                cardContainer.className = 'relative flex justify-center pt-8 h-full';
+                
+                const cardRope = document.createElement('div');
+                cardRope.className = 'absolute top-4 left-[-10%] w-[120%] h-[2px] bg-stone-500 z-0 opacity-60';
+                
+                const card = document.createElement('article');
+                card.className = `paper-card w-full max-w-sm p-4 pb-6 border border-gray-200 transform ${randomRotate} flex flex-col`;
+                
+                const peg = document.createElement('div');
+                peg.className = 'clothes-peg';
+                
+                const title = document.createElement('h2');
+                title.className = 'font-serif text-lg font-bold text-purple-900 mb-2 mt-2 leading-tight';
+                title.innerText = video.titulo;
+                
+                const desc = document.createElement('p');
+                desc.className = 'text-sm text-gray-700 mb-4 flex-grow';
+                desc.innerText = video.descripcion;
+                
+                // Contenedor de video y enlace de respaldo
+                const mediaSection = document.createElement('div');
+                mediaSection.className = 'mt-auto w-full';
+
+                const videoBox = document.createElement('div');
+                videoBox.className = 'relative w-full aspect-video bg-black flex items-center justify-center rounded-sm overflow-hidden shadow-inner';
+                
+                const embedUrl = getEmbedUrl(video.url);
+                
+                if (embedUrl) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = embedUrl;
+                    iframe.className = 'w-full h-full';
+                    iframe.setAttribute('frameborder', '0');
+                    // Se añaden permisos especiales para forzar la reproducción
+                    iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+                    iframe.setAttribute('allowfullscreen', 'true');
+                    videoBox.appendChild(iframe);
+
+                    mediaSection.appendChild(videoBox);
+
+                    // Botón de respaldo
+                    const fallbackLink = document.createElement('a');
+                    fallbackLink.href = video.url;
+                    fallbackLink.target = '_blank';
+                    fallbackLink.className = 'block mt-3 text-xs text-purple-700 hover:text-purple-900 text-center font-bold hover:underline transition-colors';
+                    fallbackLink.innerHTML = '<i class="fas fa-external-link-alt mr-1"></i> Abrir video en otra pestaña';
+                    mediaSection.appendChild(fallbackLink);
+
+                } else {
+                    videoBox.className = 'relative w-full aspect-video bg-gray-200 flex flex-col items-center justify-center rounded-sm border border-gray-300';
+                    videoBox.innerHTML = `<i class="fas fa-video-slash text-gray-400 text-3xl mb-2"></i><span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Video Pendiente</span>`;
+                    mediaSection.appendChild(videoBox);
+                }
+                
+                card.appendChild(peg); 
+                card.appendChild(title); 
+                card.appendChild(desc); 
+                card.appendChild(mediaSection);
+                
+                cardContainer.appendChild(cardRope); 
+                cardContainer.appendChild(card);
+                
+                grid.appendChild(cardContainer);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', renderTendedero);
+    </script>
+</body>
+</html>
+
+
+```
