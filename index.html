@@ -28,6 +28,7 @@
                     animation: {
                         'swing': 'swing 6s ease-in-out infinite',
                         'flicker': 'flicker 3s infinite alternate',
+                        'spin-slow': 'spin 4s linear infinite',
                     },
                     keyframes: {
                         swing: {
@@ -165,9 +166,34 @@
         body.modal-open {
             overflow: hidden;
         }
+
+        .pause-spin {
+            animation-play-state: paused;
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen locked">
+
+    <!-- REPRODUCTOR DE AUDIO INVISIBLE -->
+    <audio id="bg-music" loop>
+        <source src="https://docs.google.com/uc?export=download&id=1Jys-fkiR36a5z7pFs2Yy9a3sdEL0SODD" type="audio/mpeg">
+    </audio>
+
+    <!-- MINI REPRODUCTOR MUSICAL -->
+    <div id="music-player" class="fixed bottom-6 left-4 z-50 bg-[#1e1c22]/95 border border-gray-700 rounded-full p-1.5 pr-4 backdrop-blur-md shadow-2xl flex items-center gap-3 hidden transition-all duration-300 hover:border-pinkCross/50 max-w-[220px] sm:max-w-xs">
+        <div class="relative w-10 h-10 shrink-0">
+            <img id="record-cover" src="https://drive.google.com/thumbnail?id=1FC_l3RWVP6jWZ-PRlQNcC1gRJa2tDmzc&sz=w200" class="w-full h-full rounded-full object-cover animate-spin-slow pause-spin shadow-md" alt="Portada">
+            <div class="absolute inset-0 rounded-full border border-black/50 pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-[#111] rounded-full border border-gray-600"></div>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+            <span class="text-[8px] text-pinkCross font-bold uppercase tracking-widest">Sonando ahora</span>
+            <span class="text-xs text-white truncate font-sans font-medium" title="TRIKITRAKA (feat. Yut Meel & elakkka)">TRIKITRAKA (feat. Yut Meel)</span>
+        </div>
+        <button id="play-pause-btn" onclick="toggleMusic()" class="ml-auto text-gray-300 hover:text-pinkCross focus:outline-none transition-colors px-2">
+            <i id="play-pause-icon" class="fas fa-play text-sm"></i>
+        </button>
+    </div>
 
     <!-- MODAL INICIAL DE ADVERTENCIA -->
     <div id="warning-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 transition-opacity duration-500">
@@ -331,12 +357,48 @@
 
     <script>
         // ==========================================
+        // CONTROL DE MÚSICA DE FONDO
+        // ==========================================
+        const audio = document.getElementById('bg-music');
+        const recordCover = document.getElementById('record-cover');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        let isMusicPlayingBeforeVideo = false;
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play();
+                recordCover.classList.remove('pause-spin');
+                playPauseIcon.classList.replace('fa-play', 'fa-pause');
+            } else {
+                audio.pause();
+                recordCover.classList.add('pause-spin');
+                playPauseIcon.classList.replace('fa-pause', 'fa-play');
+            }
+        }
+
+        // ==========================================
         // MANEJO DEL MODAL INICIAL
         // ==========================================
         function acceptWarning() {
             const modal = document.getElementById('warning-modal');
+            const playerUI = document.getElementById('music-player');
+
             modal.classList.add('opacity-0');
             document.body.classList.remove('locked');
+            
+            // MOSTRAR EL REPRODUCTOR DE INMEDIATO
+            playerUI.classList.remove('hidden');
+
+            // Intenta reproducir la música al aceptar
+            audio.play().then(() => {
+                recordCover.classList.remove('pause-spin');
+                playPauseIcon.classList.replace('fa-play', 'fa-pause');
+            }).catch((error) => {
+                // Si el navegador requiere un clic extra, lo marcamos como pausado
+                recordCover.classList.add('pause-spin');
+                playPauseIcon.classList.replace('fa-pause', 'fa-play');
+            });
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 calculateDimensions();
@@ -345,7 +407,7 @@
         }
 
         // ==========================================
-        // DATOS DE VIDEOS COMPLETADOS
+        // DATOS DE VIDEOS
         // ==========================================
         const misNueveVideos = [
             { titulo: "Alejandra Ico Chub", descripcion: "Feminicidio por su pareja en ámbito íntimo con extrema violencia.", url: "https://drive.google.com/file/d/19tjPhjnoMYpx9lpeitdEQz0MPa-jlMl5/view?usp=drivesdk" },
@@ -401,6 +463,16 @@
             modalTitle.innerText = title;
             iframe.src = url;
 
+            // Pausar música automáticamente
+            if (!audio.paused) {
+                isMusicPlayingBeforeVideo = true;
+                audio.pause();
+                recordCover.classList.add('pause-spin');
+                playPauseIcon.classList.replace('fa-pause', 'fa-play');
+            } else {
+                isMusicPlayingBeforeVideo = false;
+            }
+
             document.body.classList.add('modal-open');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -419,6 +491,13 @@
             document.getElementById('modalContent').classList.add('scale-95');
             document.body.classList.remove('modal-open');
             
+            // Reanudar música
+            if (isMusicPlayingBeforeVideo) {
+                audio.play();
+                recordCover.classList.remove('pause-spin');
+                playPauseIcon.classList.replace('fa-play', 'fa-pause');
+            }
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
@@ -431,7 +510,7 @@
         });
 
         // ==========================================
-        // CARRUSEL INFINITO (MATEMÁTICAMENTE CENTRADO)
+        // CARRUSEL INFINITO
         // ==========================================
         function renderCard(video, index) {
             const rotations = ['rotate(-1.5deg)', 'rotate(1deg)', 'rotate(-1deg)', 'rotate(1.5deg)', 'rotate(0deg)'];
